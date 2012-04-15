@@ -32,8 +32,6 @@ rs232       code
 rs232_config
             bcf     STATUS,RP0
             bcf     STATUS,RP1
-            bcf     PORTC,RC6
-            bcf     PORTC,RC7
     ; Configure pins direction
             bsf     STATUS,RP0
             bcf     TRISC,RC6

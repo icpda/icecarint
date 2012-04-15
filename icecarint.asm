@@ -67,8 +67,8 @@ main
             movlw   H'70'
             iorwf   OSCCON,F
             bcf     STATUS,RP0
-    ; Init all ports
-            call    init_ports
+    ; Clear all ports
+            call    clear_ports
     ; Configure necesary modules
             call    rs232_conf
             call    pwm_conf
@@ -79,9 +79,9 @@ main
 loop
             goto    loop
 ; ------------------------------------------------------------------------------
-; Init ports
+; Clear ports
 ; ------------------------------------------------------------------------------
-init_ports
+clear_ports
             clrf    PORTA
             clrf    PORTB
             clrf    PORTC
