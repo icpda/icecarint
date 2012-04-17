@@ -11,6 +11,7 @@
             #include icecarint.inc
             #include rs232.inc
             #include pwm.inc
+            #include lcd.inc
 
 ; _CP_OFF: Code protection disabled
 ; _PWRTE_ON: Power time enabled
@@ -61,7 +62,12 @@ main
             bcf     STATUS,RP0
     ; Configure modules
             call    rs232_conf
+            call    lcd_conf
             call    pwm_conf
+    ; Prepare modules
+            call    lcd_prepare
+    ; Booting..
+            call    boot_mesg
     ; Start modules
             call    rs232_start
     ; Enable interrupts
@@ -85,6 +91,48 @@ int_enable
     ; Enable global and peripheral interruptions
             movlw   H'C0'
             movwf   INTCON
+            return
+; ------------------------------------------------------------------------------
+; Load boot message
+; ------------------------------------------------------------------------------
+boot_mesg
+            bcf     STATUS,RP0
+            bcf     STATUS,RP1
+    ; TODO: Load message from E2PROM
+            movlw   "I"
+            movwf   LCDDAT0
+            movlw   "C"
+            movwf   LCDDAT1
+            movlw   "E"
+            movwf   LCDDAT2
+            movlw   "C"
+            movwf   LCDDAT3
+            movlw   "A"
+            movwf   LCDDAT4
+            movlw   "R"
+            movwf   LCDDAT5
+            movlw   "1"
+            movwf   LCDDAT6
+            movlw   "0"
+            movwf   LCDDAT7
+            call    lcd_write_msg1
+            movlw   "B"
+            movwf   LCDDAT8
+            movlw   "O"
+            movwf   LCDDAT9
+            movlw   "O"
+            movwf   LCDDATA
+            movlw   "T"
+            movwf   LCDDATB
+            movlw   "I"
+            movwf   LCDDATC
+            movlw   "N"
+            movwf   LCDDATD
+            movlw   "G"
+            movwf   LCDDATE
+            movlw   "*"
+            movwf   LCDDATF
+            call    lcd_write_msg2
             return
 ; ------------------------------------------------------------------------------
             end

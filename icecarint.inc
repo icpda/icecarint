@@ -37,3 +37,8 @@ extern  rs232_tx_int
 ; PWM Module
 extern  pwm_conf
 extern  pwm_start
+; LCD Module
+extern  lcd_conf
+extern  lcd_prepare
+extern  lcd_write_msg1
+extern  lcd_write_msg2
