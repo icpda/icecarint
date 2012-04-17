@@ -25,3 +25,15 @@ CMD2            EQU H'007C'
 CMDIND          EQU H'007D'
 TMPSTATUS       EQU H'007E'
 TMPW            EQU H'007F'
+
+; ------------------------------------------------------------------------------
+; External functions declaration
+; ------------------------------------------------------------------------------
+; RS232 Module
+extern  rs232_conf
+extern  rs232_start
+extern  rs232_rx_int
+extern  rs232_tx_int
+; PWM Module
+extern  pwm_conf
+extern  pwm_start

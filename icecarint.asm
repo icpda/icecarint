@@ -19,24 +19,14 @@
             __config _CP_OFF & _PWRTE_ON & _WDT_OFF & _INTOSCIO
 
 ; ------------------------------------------------------------------------------
-; Assemblies included (Features)
-; ------------------------------------------------------------------------------
-            #include rs232.asm
-            #include pwm.asm
-
-; ------------------------------------------------------------------------------
-; Variables declaration
-; ------------------------------------------------------------------------------
-
-; ------------------------------------------------------------------------------
 ; Reset vector
 ; ------------------------------------------------------------------------------
-start       org     H'0000'
+start       code    H'0000'
             goto    main
 ; ------------------------------------------------------------------------------
 ; Interrupt vector
 ; ------------------------------------------------------------------------------
-interrupt   org     H'0004'
+interrupt   code    H'0004'
     ; Save context
             movwf   TMPW
             movf    STATUS,W
@@ -54,7 +44,7 @@ interrupt   org     H'0004'
     ; Restore context
             movf    TMPSTATUS,W
             movwf   STATUS
-            movf    TEMPW,W
+            movf    TMPW,W
             retfie
 ; ------------------------------------------------------------------------------
 ; Main program
@@ -62,17 +52,17 @@ interrupt   org     H'0004'
 main
             bcf     STATUS,RP0
             bcf     STATUS,RP1
+    ; Clear all ports
+            call    clear_ports
     ; Configure Internal 8 MHz Clock
             bsf     STATUS,RP0
             movlw   H'70'
             iorwf   OSCCON,F
             bcf     STATUS,RP0
-    ; Clear all ports
-            call    clear_ports
-    ; Configure necesary modules
+    ; Configure modules
             call    rs232_conf
             call    pwm_conf
-    ; Start necesary modules
+    ; Start modules
             call    rs232_start
     ; Enable interrupts
             call    int_enable
