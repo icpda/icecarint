@@ -7,17 +7,22 @@
 ;
 ; ##############################################################################
             list p=16f914
-            #include p16f914.inc
-            #include icecarint.inc
-            #include rs232.inc
-            #include pwm.inc
-            #include lcd.inc
 
 ; _CP_OFF: Code protection disabled
 ; _PWRTE_ON: Power time enabled
 ; _WDT_OFF: Watch dog timer disabled
 ; _INTOSCIO: Internal oscillator enabled
             __config _CP_OFF & _PWRTE_ON & _WDT_OFF & _INTOSCIO
+
+; ------------------------------------------------------------------------------
+; Headers
+; ------------------------------------------------------------------------------
+            #include p16f914.inc
+            #include icecarint.inc
+            #include rs232.inc
+            #include pwm.inc
+            #include lcd.inc
+            #include eeprom.inc
 
 ; ------------------------------------------------------------------------------
 ; Reset vector
@@ -64,10 +69,11 @@ main
             call    rs232_conf
             call    lcd_conf
             call    pwm_conf
+            call    eeprom_conf
     ; Prepare modules
             call    lcd_prepare
     ; Booting..
-            call    boot_mesg
+            call    display_boot_mesg
     ; Start modules
             call    rs232_start
     ; Enable interrupts
@@ -93,46 +99,125 @@ int_enable
             movwf   INTCON
             return
 ; ------------------------------------------------------------------------------
-; Load boot message
+; Display boot message
 ; ------------------------------------------------------------------------------
-boot_mesg
-            bcf     STATUS,RP0
-            bcf     STATUS,RP1
-    ; TODO: Load message from E2PROM
-            movlw   "I"
-            movwf   LCDDAT0
-            movlw   "C"
-            movwf   LCDDAT1
-            movlw   "E"
-            movwf   LCDDAT2
-            movlw   "C"
-            movwf   LCDDAT3
-            movlw   "A"
-            movwf   LCDDAT4
-            movlw   "R"
-            movwf   LCDDAT5
-            movlw   "1"
-            movwf   LCDDAT6
-            movlw   "0"
-            movwf   LCDDAT7
+display_boot_mesg
+            call    load_boot_msg
             call    lcd_write_msg1
-            movlw   "B"
-            movwf   LCDDAT8
-            movlw   "O"
-            movwf   LCDDAT9
-            movlw   "O"
-            movwf   LCDDATA
-            movlw   "T"
-            movwf   LCDDATB
-            movlw   "I"
-            movwf   LCDDATC
-            movlw   "N"
-            movwf   LCDDATD
-            movlw   "G"
-            movwf   LCDDATE
-            movlw   "*"
-            movwf   LCDDATF
             call    lcd_write_msg2
             return
+; ------------------------------------------------------------------------------
+; Load boot message
+; ------------------------------------------------------------------------------
+load_boot_msg
+            bcf     STATUS,RP0
+            bcf     STATUS,RP1
+            clrf    EEPROMADR
+            call    read_eeprom
+            movwf   LCDDAT0
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDAT1
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDAT2
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDAT3
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDAT4
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDAT5
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDAT6
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDAT7
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDAT8
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDAT9
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDATA
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDATB
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDATC
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDATD
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDATE
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   LCDDATF
+            return
+; ------------------------------------------------------------------------------
+; Read eeprom data
+; ------------------------------------------------------------------------------
+read_eeprom
+            bcf     STATUS,RP0
+            bcf     STATUS,RP1
+            movf    EEPROMADR,W
+            bsf     STATUS,RP1
+            clrf    EEPROMADRH
+            movwf   EEPROMADRL
+            call    eeprom_read
+            movlw   EEPROMERR
+            xorwf   EEPROMRDL,W
+            btfsc   STATUS,Z
+            goto    read_eeprom_err
+            movf    EEPROMRDL,W
+            goto    read_eeprom_end
+read_eeprom_err
+            movlw   "?"
+read_eeprom_end
+            bcf     STATUS,RP1
+            return
+; ------------------------------------------------------------------------------
+; Boot message
+; ------------------------------------------------------------------------------
+boot_msg    code    H'2100'
+            de      "ICECAR10"
+            de      "BOOTING*"
+; ------------------------------------------------------------------------------
+; Echo command
+; ------------------------------------------------------------------------------
+cmd_ech     de      "ECH", CMDECH
+            de      "RESV"
+err_ech     de      "ERR:ECHO"
+; ------------------------------------------------------------------------------
+; LCD command
+; ------------------------------------------------------------------------------
+cmd_lcd     de      "LCD", CMDLCD
+            de      "RESV"
+err_lcd     de      "ERR:LCD "
+; ------------------------------------------------------------------------------
+; PWM command
+; ------------------------------------------------------------------------------
+cmd_pwm     de      "PWM", CMDPWM
+            de      "RESV"
+err_pwm     de      "ERR:PWM "
+; ------------------------------------------------------------------------------
+; Direction command
+; ------------------------------------------------------------------------------
+cmd_dir     de      "DIR", CMDDIR
+            de      "RESV"
+err_dir     de      "ERR:DIR "
+; ------------------------------------------------------------------------------
+; Lights command
+; ------------------------------------------------------------------------------
+cmd_lig     de      "LIG", CMDLIG
+            de      "RESV"
+err_lig     de      "ERR:LIG "
 ; ------------------------------------------------------------------------------
             end
