@@ -73,8 +73,8 @@ rs232_stop
             bcf     STATUS,RP0
     ; Clear previous data
             clrf    RS232STATUS
-            clrf    RXDATIND
-            clrf    TXDATIND
+            clrf    RS232RXIND
+            clrf    RS232TXIND
             return
 ; ------------------------------------------------------------------------------
 ; Tx rs232 interruption
@@ -108,26 +108,31 @@ rs232_rx
             goto    rs232_rx_notstart
 rs232_rx_start
             ; Check if transmission status is idle
-            movf    RS232STATUS,F
+            movlw   RS232IDLE
+            subwf   RS232STATUS,W
             btfss   STATUS,Z
             goto    rs232_rx_conf
             ; Transmission start
-            incf    RS232STATUS,F
+            movlw   RS232TRANS
+            movwf   RS232STATUS
             return
 rs232_rx_conf
             call    rs232_rx_reset
-            incf   RS232STATUS,F
+            movlw   RS232TRANS
+            movwf   RS232STATUS
             ; TODO: Send WARNING message
             return
 rs232_rx_notstart
             ; Check if transmission status is started
-            decf    RS232STATUS,W
+            movlw   RS232TRANS
+            subwf   RS232STATUS,W
             btfsc   STATUS,Z
             goto    rs232_rx_command
             call    rs232_rx_buffer
             return
 rs232_rx_command
-            incf    RS232STATUS,F
+            movlw   RS232CMD
+            movwf   RS232STATUS
             ; Check if it is a command transmission
             movlw   "C"
             subwf   RCREG,W
@@ -136,7 +141,8 @@ rs232_rx_command
             ; Command started
             return
 rs232_rx_message
-            incf    RS232STATUS,F
+            movlw   RS232MSG
+            movwf   RS232STATUS
             ; Check if it is a message transmission
             movlw   "M"
             subwf   RCREG,W
@@ -145,88 +151,90 @@ rs232_rx_message
             ; Message started
             return
 rs232_rx_err
+            movlw   RS232ERR
+            movwf   RS232STATUS
             call    rs232_rx_reset
-            ; TODO: Send ERROR message
             return
 ; ------------------------------------------------------------------------------
 ; Rx rs232 buffer
 ; ------------------------------------------------------------------------------
 rs232_rx_buffer
-            ; Try save value to the buffer
-            incf    RXDATIND,F
+            ; Save value to the buffer
+            incf    RS232RXIND,F
 rs232_rx_buffer0
             movlw   H'01'
-            subwf   RXDATIND,W
+            subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer1
             movf    RCREG,W
-            movwf   RXDAT0
+            movwf   RS232RX0
             return
 rs232_rx_buffer1
             movlw   H'02'
-            subwf   RXDATIND,W
+            subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer2
             movf    RCREG,W
-            movwf   RXDAT1
+            movwf   RS232RX1
             return
 rs232_rx_buffer2
             movlw   H'03'
-            subwf   RXDATIND,W
+            subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer3
             movf    RCREG,W
-            movwf   RXDAT2
+            movwf   RS232RX2
             return
 rs232_rx_buffer3
             movlw   H'04'
-            subwf   RXDATIND,W
+            subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer4
             movf    RCREG,W
-            movwf   RXDAT3
+            movwf   RS232RX3
             return
 rs232_rx_buffer4
             movlw   H'05'
-            subwf   RXDATIND,W
+            subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer5
             movf    RCREG,W
-            movwf   RXDAT4
+            movwf   RS232RX4
             return
 rs232_rx_buffer5
             movlw   H'06'
-            subwf   RXDATIND,W
+            subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer6
             movf    RCREG,W
-            movwf   RXDAT5
+            movwf   RS232RX5
             return
 rs232_rx_buffer6
             movlw   H'07'
-            subwf   RXDATIND,W
+            subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer7
             movf    RCREG,W
-            movwf   RXDAT6
+            movwf   RS232RX6
             return
 rs232_rx_buffer7
             movlw   H'08'
-            subwf   RXDATIND,W
+            subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer_throw
             movf    RCREG,W
-            movwf   RXDAT7
+            movwf   RS232RX7
             return
 rs232_rx_buffer_throw
-            decf    RXDATIND,F
+            decf    RS232RXIND,F
             return
 ; ------------------------------------------------------------------------------
 ; Rx rs232 reset
 ; ------------------------------------------------------------------------------
 rs232_rx_reset
-            clrf    RXDATIND
-            clrf    RS232STATUS
+            clrf    RS232RXIND
+            movlw   RS232IDLE
+            movwf   RS232STATUS
             return
 ; ------------------------------------------------------------------------------
 ; Global functions declaration
