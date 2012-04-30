@@ -10,7 +10,13 @@
 ; ------------------------------------------------------------------------------
 ; Variables declaration
 ; ------------------------------------------------------------------------------
-EEPROMADR       EQU H'0050'
+ICESTATUS0      EQU H'0050'
+ICESTATUS1      EQU H'0051'
+; Memory used for operation in main loop
+MULTIPLYING     EQU H'0053'
+MULTIPLIER      EQU H'0054'
+EEPROMADR       EQU H'0055'
+; Shared memory between banks
 DATA0           EQU H'0070'
 DATA1           EQU H'0071'
 DATA2           EQU H'0072'

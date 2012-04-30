@@ -42,7 +42,7 @@ interrupt   code    H'0004'
             bcf     STATUS,RP1
     ; Check for Rx int
             btfsc   PIR1,RCIF
-            call    rs232_rx_int
+            call    read_rs232
     ; Check for Tx int
             btfsc   PIR1,TXIF
             call    rs232_tx_int
@@ -97,6 +97,56 @@ int_enable
     ; Enable global and peripheral interruptions
             movlw   H'C0'
             movwf   INTCON
+            return
+; ------------------------------------------------------------------------------
+; Read byte from rs232
+; ------------------------------------------------------------------------------
+read_rs232
+            call    rs232_rx_int
+    ; Check if we have recived a command
+check_for_cmd
+            movlw   RS232CMD
+            subwf   RS232STATUS,W
+            btfss   STATUS,Z
+            goto    check_for_msg
+            movlw   RS232CMDSIZE
+            subwf   RS232RXIND,W
+            btfss   STATUS,Z
+    ; TODO: Implement command interpreter
+            return
+    ; Check if we have recived a message
+check_for_msg
+            movlw   RS232MSG
+            subwf   RS232STATUS,W
+            btfss   STATUS,Z
+            return
+            movlw   RS232MSGSIZE
+            subwf   RS232RXIND,W
+            btfss   STATUS,Z
+            call    display_msg
+            return
+; ------------------------------------------------------------------------------
+; Display rs232 message
+; ------------------------------------------------------------------------------
+display_msg
+            movf    RS232RX0,W
+            movwf   LCDDAT0
+            movf    RS232RX1,W
+            movwf   LCDDAT1
+            movf    RS232RX2,W
+            movwf   LCDDAT2
+            movf    RS232RX3,W
+            movwf   LCDDAT3
+            movf    RS232RX4,W
+            movwf   LCDDAT4
+            movf    RS232RX5,W
+            movwf   LCDDAT5
+            movf    RS232RX6,W
+            movwf   LCDDAT6
+            movf    RS232RX7,W
+            movwf   LCDDAT7
+    ; Write message to lcd
+            call    lcd_write_msg2
             return
 ; ------------------------------------------------------------------------------
 ; Display boot message
