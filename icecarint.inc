@@ -34,6 +34,13 @@ TMPSTATUS       EQU H'007E'
 TMPW            EQU H'007F'
 
 ; ------------------------------------------------------------------------------
+; ICESTATUS0 bit description
+; ------------------------------------------------------------------------------
+ICEMSG          EQU H'0007'
+ICECMD          EQU H'0006'
+ICECMDECH       EQU H'0005'
+
+; ------------------------------------------------------------------------------
 ; External functions declaration
 ; ------------------------------------------------------------------------------
 ; RS232 Module
@@ -57,9 +64,10 @@ extern  eeprom_write
 ; ------------------------------------------------------------------------------
 ; Commands declaration
 ; ------------------------------------------------------------------------------
-CMDUNKWN        EQU H'0000'
-CMDECH          EQU H'0001'
-CMDLCD          EQU H'0002'
-CMDPWM          EQU H'0003'
-CMDDIR          EQU H'0004'
-CMDLIG          EQU H'0005'
+CMDUNKWN        EQU H'00'
+CMDKWN          EQU H'01'
+CMDECH          EQU H'10'
+CMDLCD          EQU H'20'
+CMDPWM          EQU H'30'
+CMDDIR          EQU H'40'
+CMDLIG          EQU H'50'

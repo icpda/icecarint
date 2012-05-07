@@ -78,7 +78,24 @@ main
             call    rs232_start
     ; Enable interrupts
             call    int_enable
+    ; Clear status registers
+            clrf    ICESTATUS0
+            clrf    ICESTATUS1
 loop
+    ; Check command available
+loop_cmd
+            btfss   ICESTATUS0,ICECMD
+            goto    loop_msg
+    ; TODO: Implement command interpreter
+            bcf     ICESTATUS0,ICECMD
+    ; Check message available
+loop_msg
+            btfss   ICESTATUS0,ICEMSG
+            goto    loop_end
+            call    display_msg
+            bcf     ICESTATUS0,ICEMSG
+    ; Restart loop
+loop_end
             goto    loop
 ; ------------------------------------------------------------------------------
 ; Clear ports
@@ -112,7 +129,15 @@ check_for_cmd
             movlw   RS232CMDSIZE
             subwf   RS232RXIND,W
             btfss   STATUS,Z
-    ; TODO: Implement command interpreter
+            return
+            bsf     ICESTATUS0,ICECMD
+            call    translate_cmd
+    ; Echo command is excecuted here
+    ; TODO: Implement ECHO command
+            btfss   ICESTATUS0,ICECMDECH
+            return
+            bcf     ICESTATUS0,ICECMDECH
+            bcf     ICESTATUS0,ICECMD
             return
     ; Check if we have recived a message
 check_for_msg
@@ -122,8 +147,54 @@ check_for_msg
             return
             movlw   RS232MSGSIZE
             subwf   RS232RXIND,W
+            btfsc   STATUS,Z
+            bsf     ICESTATUS0,ICEMSG
+            return
+; ------------------------------------------------------------------------------
+; Translates rs232 command
+; ------------------------------------------------------------------------------
+translate_cmd
+    ; Check if is echo command
+            movlw   CMDECH
+            call    validate_cmd
             btfss   STATUS,Z
-            call    display_msg
+            goto    translate_cmd_end
+            bsf     ICESTATUS0,ICECMDECH
+translate_cmd_end
+            movf    RS232RX3,W
+            movwf   ICESTATUS1
+            return
+; ------------------------------------------------------------------------------
+; Validate is command
+; ------------------------------------------------------------------------------
+validate_cmd
+validate_cmd1
+            movwf   EEPROMADR
+            call    read_eeprom
+            subwf   RS232RX0,W
+            btfsc   STATUS,Z
+            goto    validate_cmd2
+            movlw   CMDUNKWN
+            goto    validate_cmd_end
+validate_cmd2
+            incf    EEPROMADR,F
+            call    read_eeprom
+            subwf   RS232RX1,W
+            btfsc   STATUS,Z
+            goto    validate_cmd3
+            movlw   CMDUNKWN
+            goto    validate_cmd_end
+validate_cmd3
+            incf    EEPROMADR,F
+            call    read_eeprom
+            subwf   RS232RX2,W
+            btfsc   STATUS,Z
+            goto    validate_cmd_kwn
+            movlw   CMDUNKWN
+            goto    validate_cmd_end
+validate_cmd_kwn
+            movlw   CMDKWN
+validate_cmd_end
             return
 ; ------------------------------------------------------------------------------
 ; Display rs232 message
@@ -244,7 +315,7 @@ boot_msg    code    H'2100'
 ; ------------------------------------------------------------------------------
 cmd_ech     de      "ECH", CMDECH
             de      "RESV"
-err_ech     de      "ERR:ECHO"
+err_ech     de      "ERR:ECH "
 ; ------------------------------------------------------------------------------
 ; LCD command
 ; ------------------------------------------------------------------------------
