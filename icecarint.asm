@@ -86,7 +86,7 @@ loop
 loop_cmd
             btfss   ICESTATUS0,ICECMD
             goto    loop_msg
-    ; TODO: Implement command interpreter
+            call    translate_cmd
             bcf     ICESTATUS0,ICECMD
     ; Check message available
 loop_msg
@@ -154,7 +154,7 @@ check_for_msg
 ; Translates rs232 command
 ; ------------------------------------------------------------------------------
 translate_cmd
-translate_cmd_lcd
+translate_c2md_lcd
     ; Check if is lcd command
             movlw   CMDLCD
             call    validate_cmd
