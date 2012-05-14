@@ -166,8 +166,15 @@ translate_cmd_pwm
             movlw   CMDPWM
             call    validate_cmd
             btfss   STATUS,Z
-            goto    translate_cmd_end
+            goto    translate_cmd_dir
             bsf     ICESTATUS0,ICECMDPWM
+translate_cmd_dir
+    ; Check if is dir command
+            movlw   CMDDIR
+            call    validate_cmd
+            btfss   STATUS,Z
+            goto    translate_cmd_end
+            bsf     ICESTATUS0,ICECMDDIR
 translate_cmd_echo
     ; Check if is echo command
             movlw   CMDECH
