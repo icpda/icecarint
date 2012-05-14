@@ -42,6 +42,7 @@ ICECMDECH       EQU H'05'
 ICECMDLCD       EQU H'04'
 ICECMDPWM       EQU H'03'
 ICECMDDIR       EQU H'02'
+ICECMDLIG       EQU H'01'
 
 ; ------------------------------------------------------------------------------
 ; External functions declaration

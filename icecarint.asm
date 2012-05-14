@@ -173,8 +173,15 @@ translate_cmd_dir
             movlw   CMDDIR
             call    validate_cmd
             btfss   STATUS,Z
-            goto    translate_cmd_end
+            goto    translate_cmd_lig
             bsf     ICESTATUS0,ICECMDDIR
+translate_cmd_lig
+    ; Check if is lig command
+            movlw   CMDLIG
+            call    validate_cmd
+            btfss   STATUS,Z
+            goto    translate_cmd_end
+            bsf     ICESTATUS0,ICECMDLIG
 translate_cmd_echo
     ; Check if is echo command
             movlw   CMDECH
