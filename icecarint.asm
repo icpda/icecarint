@@ -154,18 +154,26 @@ check_for_msg
 ; Translates rs232 command
 ; ------------------------------------------------------------------------------
 translate_cmd
+translate_cmd_echo
     ; Check if is echo command
             movlw   CMDECH
             call    validate_cmd
             btfss   STATUS,Z
-            goto    translate_cmd_end
+            goto    translate_cmd_lcd
             bsf     ICESTATUS0,ICECMDECH
+translate_cmd_lcd
+    ; Check if is lcd command
+            movlw   CMDLCD
+            call    validate_cmd
+            btfss   STATUS,Z
+            goto    translate_cmd_end
+            bsf     ICESTATUS0,ICECMDLCD
 translate_cmd_end
             movf    RS232RX3,W
             movwf   ICESTATUS1
             return
 ; ------------------------------------------------------------------------------
-; Validate is command
+; Validate is known command
 ; ------------------------------------------------------------------------------
 validate_cmd
 validate_cmd1

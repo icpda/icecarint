@@ -36,9 +36,10 @@ TMPW            EQU H'007F'
 ; ------------------------------------------------------------------------------
 ; ICESTATUS0 bit description
 ; ------------------------------------------------------------------------------
-ICEMSG          EQU H'0007'
-ICECMD          EQU H'0006'
-ICECMDECH       EQU H'0005'
+ICEMSG          EQU H'07'
+ICECMD          EQU H'06'
+ICECMDECH       EQU H'05'
+ICECMDLCD       EQU H'04'
 
 ; ------------------------------------------------------------------------------
 ; External functions declaration
