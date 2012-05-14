@@ -131,7 +131,7 @@ check_for_cmd
             btfss   STATUS,Z
             return
             bsf     ICESTATUS0,ICECMD
-            call    translate_cmd
+            call    translate_cmd_echo
     ; Echo command is excecuted here
     ; TODO: Implement ECHO command
             btfss   ICESTATUS0,ICECMDECH
@@ -154,20 +154,27 @@ check_for_msg
 ; Translates rs232 command
 ; ------------------------------------------------------------------------------
 translate_cmd
-translate_cmd_echo
-    ; Check if is echo command
-            movlw   CMDECH
-            call    validate_cmd
-            btfss   STATUS,Z
-            goto    translate_cmd_lcd
-            bsf     ICESTATUS0,ICECMDECH
 translate_cmd_lcd
     ; Check if is lcd command
             movlw   CMDLCD
             call    validate_cmd
             btfss   STATUS,Z
-            goto    translate_cmd_end
+            goto    translate_cmd_pwm
             bsf     ICESTATUS0,ICECMDLCD
+translate_cmd_pwm
+    ; Check if is pwm command
+            movlw   CMDPWM
+            call    validate_cmd
+            btfss   STATUS,Z
+            goto    translate_cmd_end
+            bsf     ICESTATUS0,ICECMDPWM
+translate_cmd_echo
+    ; Check if is echo command
+            movlw   CMDECH
+            call    validate_cmd
+            btfss   STATUS,Z
+            goto    translate_cmd_end
+            bsf     ICESTATUS0,ICECMDECH
 translate_cmd_end
             movf    RS232RX3,W
             movwf   ICESTATUS1
