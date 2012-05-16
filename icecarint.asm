@@ -132,10 +132,12 @@ check_for_cmd
             return
             bsf     ICESTATUS0,ICECMD
             call    translate_cmd_echo
-    ; Echo command is excecuted here
-    ; TODO: Implement ECHO command
             btfss   ICESTATUS0,ICECMDECH
             return
+            movf    RS232RX3,W
+            movwf   ICECMDECHARG
+    ; There was an echo command
+            call    reply2_echo_cmd
             bcf     ICESTATUS0,ICECMDECH
             bcf     ICESTATUS0,ICECMD
             return
@@ -154,7 +156,7 @@ check_for_msg
 ; Translates rs232 command
 ; ------------------------------------------------------------------------------
 translate_cmd
-translate_c2md_lcd
+translate_cmd_lcd
     ; Check if is lcd command
             movlw   CMDLCD
             call    validate_cmd
@@ -226,26 +228,39 @@ validate_cmd_kwn
 validate_cmd_end
             return
 ; ------------------------------------------------------------------------------
-; Display rs232 message
+; Reply to echo command
 ; ------------------------------------------------------------------------------
-display_msg
-            movf    RS232RX0,W
-            movwf   LCDDAT0
-            movf    RS232RX1,W
-            movwf   LCDDAT1
-            movf    RS232RX2,W
-            movwf   LCDDAT2
-            movf    RS232RX3,W
-            movwf   LCDDAT3
-            movf    RS232RX4,W
-            movwf   LCDDAT4
-            movf    RS232RX5,W
-            movwf   LCDDAT5
-            movf    RS232RX6,W
-            movwf   LCDDAT6
-            movf    RS232RX7,W
-            movwf   LCDDAT7
-    ; Write message to lcd
+reply2_echo_cmd
+            movlw   "O"
+            subwf   ICECMDECHARG,W
+            btfss   STATUS,Z
+            call    err_echo_cmd
+    ; Command echo correct
+            movlw   "@"
+            movwf   RS232TX0
+            movlw   CMDECH
+            movwf   EEPROMADR
+            call    read_eeprom
+            movwf   RS232TX1
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   RS232TX2
+            incf    EEPROMADR,F
+            call    read_eeprom
+            movwf   RS232TX3
+            movf    ICESTATUS0,W
+            movwf   RS232TX4
+            call    rs232_tx
+            return
+; ------------------------------------------------------------------------------
+; Display echo command error
+; ------------------------------------------------------------------------------
+err_echo_cmd
+            movlw   ICECMDECH
+            movwf   EEPROMADR
+            movlw   ICEERRIND
+            addwf   EEPROMADR,F
+            call    load_eeprom_msg2
             call    lcd_write_msg2
             return
 ; ------------------------------------------------------------------------------
@@ -263,6 +278,13 @@ load_boot_msg
             bcf     STATUS,RP0
             bcf     STATUS,RP1
             clrf    EEPROMADR
+            call    load_eeprom_msg1
+            call    load_eeprom_msg2
+            return
+; ------------------------------------------------------------------------------
+; Load eeprom messages
+; ------------------------------------------------------------------------------
+load_eeprom_msg1
             call    read_eeprom
             movwf   LCDDAT0
             incf    EEPROMADR,F
@@ -287,6 +309,7 @@ load_boot_msg
             call    read_eeprom
             movwf   LCDDAT7
             incf    EEPROMADR,F
+load_eeprom_msg2
             call    read_eeprom
             movwf   LCDDAT8
             incf    EEPROMADR,F
@@ -332,6 +355,29 @@ read_eeprom_err
             movlw   "?"
 read_eeprom_end
             bcf     STATUS,RP1
+            return
+; ------------------------------------------------------------------------------
+; Display rs232 message
+; ------------------------------------------------------------------------------
+display_msg
+            movf    RS232RX0,W
+            movwf   LCDDAT0
+            movf    RS232RX1,W
+            movwf   LCDDAT1
+            movf    RS232RX2,W
+            movwf   LCDDAT2
+            movf    RS232RX3,W
+            movwf   LCDDAT3
+            movf    RS232RX4,W
+            movwf   LCDDAT4
+            movf    RS232RX5,W
+            movwf   LCDDAT5
+            movf    RS232RX6,W
+            movwf   LCDDAT6
+            movf    RS232RX7,W
+            movwf   LCDDAT7
+    ; Write message to lcd
+            call    lcd_write_msg2
             return
 ; ------------------------------------------------------------------------------
 ; Boot message

@@ -16,6 +16,8 @@ ICESTATUS1      EQU H'0051'
 MULTIPLYING     EQU H'0053'
 MULTIPLIER      EQU H'0054'
 EEPROMADR       EQU H'0055'
+; Memory for command arguments
+ICECMDECHARG    EQU H'0060'
 ; Shared memory between banks
 DATA0           EQU H'0070'
 DATA1           EQU H'0071'
@@ -32,6 +34,8 @@ CMD2            EQU H'007C'
 CMDIND          EQU H'007D'
 TMPSTATUS       EQU H'007E'
 TMPW            EQU H'007F'
+
+ICEERRIND       EQU H'08'
 
 ; ------------------------------------------------------------------------------
 ; ICESTATUS0 bit description
@@ -50,7 +54,9 @@ ICECMDLIG       EQU H'01'
 ; RS232 Module
 extern  rs232_conf
 extern  rs232_start
+extern  rs232_rx
 extern  rs232_rx_int
+extern  rs232_tx
 extern  rs232_tx_int
 ; PWM Module
 extern  pwm_conf

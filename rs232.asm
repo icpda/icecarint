@@ -80,6 +80,9 @@ rs232_stop
 ; Tx rs232 interruption
 ; ------------------------------------------------------------------------------
 rs232_tx_int
+            ; First check if still missing bytes to transfer
+            movf    RS232TXIND,W
+            btfss   STATUS,Z
             call    rs232_tx
             bcf     PIR1,TXIF
             return
@@ -87,6 +90,42 @@ rs232_tx_int
 ; Tx rs232
 ; ------------------------------------------------------------------------------
 rs232_tx
+            bcf     STATUS,RP0
+            bcf     STATUS,RP1
+            ; Start a transmission if not in progress
+            movf    RS232TXIND,W
+            btfsc   STATUS,Z
+            goto    rs232_tx_new
+rs232_tx1   movlw   H'04'
+            subwf   RS232TXIND,W
+            btfss   STATUS,Z
+            goto    rs232_tx2
+            movf    RS232TX1,W
+            goto    rs232_tx_end
+rs232_tx2   movlw   H'03'
+            subwf   RS232TXIND,W
+            btfss   STATUS,Z
+            goto    rs232_tx3
+            movf    RS232TX2,W
+            goto    rs232_tx_end
+rs232_tx3   movlw   H'02'
+            subwf   RS232TXIND,W
+            btfss   STATUS,Z
+            goto    rs232_tx4
+            movf    RS232TX3,W
+            goto    rs232_tx_end
+rs232_tx4   movf    RS232TX4,W
+            goto    rs232_tx_end
+rs232_tx_new
+            movlw   H'05'
+            movwf   RS232TXIND
+            movf    RS232TX0,W
+rs232_tx_end
+            movwf   TXREG
+            bsf     STATUS,RP0
+            bsf     TXSTA,TXEN
+            bcf     STATUS,RP0
+            decf    RS232TXIND,F
             return
 ; ------------------------------------------------------------------------------
 ; Rx rs232 interruption
@@ -241,7 +280,9 @@ rs232_rx_reset
 ; ------------------------------------------------------------------------------
 global  rs232_conf
 global  rs232_start
+global  rs232_rx
 global  rs232_rx_int
+global  rs232_tx
 global  rs232_tx_int
 ;-------------------------------------------------------------------------------
             end
