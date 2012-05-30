@@ -88,6 +88,18 @@ loop_cmd
             goto    loop_msg
             call    translate_cmd
             bcf     ICESTATUS0,ICECMD
+    ; Check if was PWM command
+            btfss   ICESTATUS0,ICECMDPWM
+            goto    loop_msg
+            call    pwm_stop
+            movf    ICESTATUS1,W
+            xorlw   H'30'
+            movwf   PWMCYCLE
+            call    pwm_start
+            movlw   PWMCMDOK
+            subwf   PWMSTATUS
+            btfss   STATUS,Z
+
     ; Check message available
 loop_msg
             btfss   ICESTATUS0,ICEMSG
@@ -256,7 +268,18 @@ reply2_echo_cmd
 ; Display echo command error
 ; ------------------------------------------------------------------------------
 err_echo_cmd
-            movlw   ICECMDECH
+            movlw   CMDECH
+            call    display_cmd_err
+            return
+; ------------------------------------------------------------------------------
+; Display pwm command error
+            movlw   CMDPWM
+            call    display_cmd_err
+            return
+; ------------------------------------------------------------------------------
+; Display command error
+; ------------------------------------------------------------------------------
+display_cmd_err
             movwf   EEPROMADR
             movlw   ICEERRIND
             addwf   EEPROMADR,F

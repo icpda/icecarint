@@ -38,6 +38,7 @@ pwm_conf
             movwf   CCP2CON
     ; Set PWM0
             clrf    PWMSTATUS
+            clrf    PWMCYCLE
             clrf    CCPR2L
             movlw   H'0F'
             andwf   CCP2CON,F
@@ -56,8 +57,10 @@ pwm_conf
 pwm_start
             bcf     STATUS,RP0
             bcf     STATUS,RP1
-     ; Set PWMX based on PWMSTATUS
-            movf    PWMSTATUS,W
+            movlw   PWMCMDOK
+            movwf   PWMSTATUS
+     ; Set PWM based on PWMCYCLE
+            movf    PWMCYCLE,W
             btfsc   STATUS,Z
             return
             call    pwm_set_duty_cycle
@@ -72,7 +75,7 @@ pwm_stop
             bcf     STATUS,RP0
             bcf     STATUS,RP1
     ; Set PWM0
-            clrf    PWMSTATUS
+            clrf    PWMCYCLE
             clrf    CCPR2L
             movlw   H'0F'
             andwf   CCP2CON,F
@@ -83,7 +86,7 @@ pwm_stop
             return
 ; ------------------------------------------------------------------------------
 pwm_set_duty_cycle
-            decfsz  PWMSTATUS,F
+            decfsz  PWMCYCLE,F
             goto    pwm_set2
             movlw   PWM1H
             iorwf   CCP2CON,F
@@ -91,7 +94,7 @@ pwm_set_duty_cycle
             movwf   CCPR2L
             return
 pwm_set2
-            decfsz  PWMSTATUS,F
+            decfsz  PWMCYCLE,F
             goto    pwm_set3
             movlw   PWM2H
             iorwf   CCP2CON,F
@@ -99,7 +102,7 @@ pwm_set2
             movwf   CCPR2L
             return
 pwm_set3
-            decfsz  PWMSTATUS,F
+            decfsz  PWMCYCLE,F
             goto    pwm_set4
             movlw   PWM3H
             iorwf   CCP2CON,F
@@ -107,7 +110,7 @@ pwm_set3
             movwf   CCPR2L
             return
 pwm_set4
-            decfsz  PWMSTATUS,F
+            decfsz  PWMCYCLE,F
             goto    pwm_set5
             movlw   PWM4H
             iorwf   CCP2CON,F
@@ -115,7 +118,7 @@ pwm_set4
             movwf   CCPR2L
             return
 pwm_set5
-            decfsz  PWMSTATUS,F
+            decfsz  PWMCYCLE,F
             goto    pwm_set6
             movlw   PWM5H
             iorwf   CCP2CON,F
@@ -123,7 +126,7 @@ pwm_set5
             movwf   CCPR2L
             return
 pwm_set6
-            decfsz  PWMSTATUS,F
+            decfsz  PWMCYCLE,F
             goto    pwm_set_error
             movlw   PWM6H
             iorwf   CCP2CON,F
@@ -131,12 +134,16 @@ pwm_set6
             movwf   CCPR2L
             return
 pwm_set_error
-            clrf    PWMSTATUS
+            movlw   PWMCMDERR
+            movwf   PWMSTATUS
+            clrf    PWMCYCLE
             return
 ; ------------------------------------------------------------------------------
 ; Global functions declaration
 ; ------------------------------------------------------------------------------
 global  pwm_conf
 global  pwm_start
+global  pwm_stop
+global  pwm_set_duty_cycle
 ; ------------------------------------------------------------------------------
             end

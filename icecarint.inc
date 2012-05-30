@@ -35,6 +35,9 @@ CMDIND          EQU H'007D'
 TMPSTATUS       EQU H'007E'
 TMPW            EQU H'007F'
 
+; ------------------------------------------------------------------------------
+; Constants declaration
+; ------------------------------------------------------------------------------
 ICEERRIND       EQU H'08'
 
 ; ------------------------------------------------------------------------------
@@ -61,6 +64,8 @@ extern  rs232_tx_int
 ; PWM Module
 extern  pwm_conf
 extern  pwm_start
+extern  pwm_stop
+extern  pwm_set_duty_cycle
 ; LCD Module
 extern  lcd_conf
 extern  lcd_prepare
