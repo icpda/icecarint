@@ -332,6 +332,7 @@ load_eeprom_msg1
             call    read_eeprom
             movwf   LCDDAT7
             incf    EEPROMADR,F
+            return
 load_eeprom_msg2
             call    read_eeprom
             movwf   LCDDAT8
