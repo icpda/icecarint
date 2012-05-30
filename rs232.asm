@@ -140,6 +140,12 @@ rs232_rx_int
 rs232_rx
             bcf     STATUS,RP0
             bcf     STATUS,RP1
+            ; Echo all characters received
+            movf    RCREG,W
+            movwf   TXREG
+            bsf     STATUS,RP0
+            bsf     TXSTA,TXEN
+            bcf     STATUS,RP0
             ; Check if it is a start of transmission
             movlw   "@"
             subwf   RCREG,W
