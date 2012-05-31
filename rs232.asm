@@ -96,30 +96,31 @@ rs232_tx
             movf    RS232TXIND,W
             btfsc   STATUS,Z
             goto    rs232_tx_new
-rs232_tx1   movlw   H'04'
+rs232_tx0   movlw   H'04'
+            subwf   RS232TXIND,W
+            btfss   STATUS,Z
+            goto    rs232_tx1
+            movf    RS232TX0,W
+            goto    rs232_tx_end
+rs232_tx1   movlw   H'03'
             subwf   RS232TXIND,W
             btfss   STATUS,Z
             goto    rs232_tx2
             movf    RS232TX1,W
             goto    rs232_tx_end
-rs232_tx2   movlw   H'03'
+rs232_tx2   movlw   H'02'
             subwf   RS232TXIND,W
             btfss   STATUS,Z
             goto    rs232_tx3
             movf    RS232TX2,W
             goto    rs232_tx_end
-rs232_tx3   movlw   H'02'
-            subwf   RS232TXIND,W
-            btfss   STATUS,Z
-            goto    rs232_tx4
-            movf    RS232TX3,W
-            goto    rs232_tx_end
-rs232_tx4   movf    RS232TX4,W
+rs232_tx3   movf    RS232TX3,W
             goto    rs232_tx_end
 rs232_tx_new
-            movlw   H'05'
+            movlw   RS232CMDSIZE
             movwf   RS232TXIND
-            movf    RS232TX0,W
+            incf    RS232TXIND,F
+            movlw   '@'
 rs232_tx_end
             movwf   TXREG
             bsf     STATUS,RP0
@@ -147,7 +148,7 @@ rs232_rx
             bsf     TXSTA,TXEN
             bcf     STATUS,RP0
             ; Check if it is a start of transmission
-            movlw   "@"
+            movlw   '@'
             subwf   RCREG,W
             btfss   STATUS,Z
             goto    rs232_rx_notstart
@@ -156,16 +157,10 @@ rs232_rx_start
             movlw   RS232IDLE
             subwf   RS232STATUS,W
             btfss   STATUS,Z
-            goto    rs232_rx_conf
+            call    rs232_rx_reset
             ; Transmission start
             movlw   RS232TRANS
             movwf   RS232STATUS
-            return
-rs232_rx_conf
-            call    rs232_rx_reset
-            movlw   RS232TRANS
-            movwf   RS232STATUS
-            ; TODO: Send WARNING message
             return
 rs232_rx_notstart
             ; Check if transmission status is started
@@ -173,32 +168,34 @@ rs232_rx_notstart
             subwf   RS232STATUS,W
             btfsc   STATUS,Z
             goto    rs232_rx_command
+            ; Check if we have command or message
+            movlw   RS232TRANS
+            subwf   RS232STATUS,W
+            btfsc   STATUS,C
             call    rs232_rx_buffer
             return
 rs232_rx_command
             movlw   RS232CMD
             movwf   RS232STATUS
             ; Check if it is a command transmission
-            movlw   "C"
+            movlw   'C'
             subwf   RCREG,W
-            btfss   STATUS,Z
-            goto    rs232_rx_message
+            btfsc   STATUS,Z
             ; Command started
             return
 rs232_rx_message
             movlw   RS232MSG
             movwf   RS232STATUS
             ; Check if it is a message transmission
-            movlw   "M"
+            movlw   'M'
             subwf   RCREG,W
-            btfss   STATUS,Z
-            goto    rs232_rx_err
+            btfsc   STATUS,Z
             ; Message started
             return
-rs232_rx_err
-            movlw   RS232ERR
-            movwf   RS232STATUS
+rs232_rx_unknown
             call    rs232_rx_reset
+            movlw   RS232TRANS
+            movwf   RS232STATUS
             return
 ; ------------------------------------------------------------------------------
 ; Rx rs232 buffer

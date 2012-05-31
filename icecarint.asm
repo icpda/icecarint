@@ -86,6 +86,7 @@ loop
 loop_cmd
             btfss   ICESTATUS0,ICECMD
             goto    loop_msg
+            bsf     PORTD,RD3
             call    translate_cmd
             bcf     ICESTATUS0,ICECMD
     ; Check if was PWM command
@@ -118,6 +119,9 @@ clear_ports
             clrf    PORTC
             clrf    PORTD
             clrf    PORTE
+            bsf     STATUS,RP0
+            bcf     TRISD,RD3
+            bcf     STATUS,RP0
             return
 ; ------------------------------------------------------------------------------
 ; Interrupts enable
@@ -248,20 +252,18 @@ reply2_echo_cmd
             btfss   STATUS,Z
             call    err_echo_cmd
     ; Command echo correct
-            movlw   "@"
-            movwf   RS232TX0
             movlw   CMDECH
             movwf   EEPROMADR
+            call    read_eeprom
+            movwf   RS232TX0
+            incf    EEPROMADR,F
             call    read_eeprom
             movwf   RS232TX1
             incf    EEPROMADR,F
             call    read_eeprom
             movwf   RS232TX2
-            incf    EEPROMADR,F
-            call    read_eeprom
-            movwf   RS232TX3
             movf    ICESTATUS0,W
-            movwf   RS232TX4
+            movwf   RS232TX3
             call    rs232_tx
             return
 ; ------------------------------------------------------------------------------

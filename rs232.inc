@@ -23,8 +23,7 @@ RS232TX0        EQU H'002A'
 RS232TX1        EQU H'002B'
 RS232TX2        EQU H'002C'
 RS232TX3        EQU H'002D'
-RS232TX4        EQU H'002E'
-RS232TXIND      EQU H'002F'
+RS232TXIND      EQU H'002E'
 
 ; -----RS232STATUS--------------------------------------------------------------
 ; 0: Idle
