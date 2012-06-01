@@ -91,49 +91,49 @@ pwm_stop
 pwm_set_duty_cycle
             decfsz  PWMCYCLE,F
             goto    pwm_set2
-            movlw   PWM1H
-            iorwf   CCP2CON,F
             movlw   PWM1L
+            iorwf   CCP2CON,F
+            movlw   PWM1H
             movwf   CCPR2L
             return
 pwm_set2
             decfsz  PWMCYCLE,F
             goto    pwm_set3
-            movlw   PWM2H
-            iorwf   CCP2CON,F
             movlw   PWM2L
+            iorwf   CCP2CON,F
+            movlw   PWM2H
             movwf   CCPR2L
             return
 pwm_set3
             decfsz  PWMCYCLE,F
             goto    pwm_set4
-            movlw   PWM3H
-            iorwf   CCP2CON,F
             movlw   PWM3L
+            iorwf   CCP2CON,F
+            movlw   PWM3H
             movwf   CCPR2L
             return
 pwm_set4
             decfsz  PWMCYCLE,F
             goto    pwm_set5
-            movlw   PWM4H
-            iorwf   CCP2CON,F
             movlw   PWM4L
+            iorwf   CCP2CON,F
+            movlw   PWM4H
             movwf   CCPR2L
             return
 pwm_set5
             decfsz  PWMCYCLE,F
             goto    pwm_set6
-            movlw   PWM5H
-            iorwf   CCP2CON,F
             movlw   PWM5L
+            iorwf   CCP2CON,F
+            movlw   PWM5H
             movwf   CCPR2L
             return
 pwm_set6
             decfsz  PWMCYCLE,F
             goto    pwm_set_error
-            movlw   PWM6H
-            iorwf   CCP2CON,F
             movlw   PWM6L
+            iorwf   CCP2CON,F
+            movlw   PWM6H
             movwf   CCPR2L
             return
 pwm_set_error
