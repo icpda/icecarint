@@ -86,7 +86,6 @@ main_loop
 loop_cmd
             btfss   ICESTATUS0,ICECMD
             goto    loop_msg
-            bcf     PORTD,RD3
             call    translate_cmd
             bcf     ICESTATUS0,ICECMD
     ; Check if was PWM command
@@ -97,10 +96,10 @@ loop_cmd
             xorlw   H'30'
             movwf   PWMCYCLE
             call    pwm_start
-            movlw   PWMCMDOK
-            subwf   PWMSTATUS
+            sublw   PWMCMDOK
             btfss   STATUS,Z
-
+            call    err_pwm_cmd
+            bcf     ICESTATUS0,ICECMDPWM
     ; Check message available
 loop_msg
             btfss   ICESTATUS0,ICEMSG
@@ -146,7 +145,7 @@ check_for_cmd
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             return
-            bsf     PORTD,RD3
+            bcf     PORTD,RD3
             bsf     ICESTATUS0,ICECMD
             call    translate_cmd_echo
             btfss   ICESTATUS0,ICECMDECH
@@ -176,40 +175,37 @@ check_for_msg
 ; Translates rs232 command
 ; ------------------------------------------------------------------------------
 translate_cmd
-translate_cmd_lcd
     ; Check if is lcd command
             movlw   CMDLCD
             call    validate_cmd
-            btfss   STATUS,Z
-            goto    translate_cmd_pwm
+            sublw   CMDKWN
+            btfsc   STATUS,Z
             bsf     ICESTATUS0,ICECMDLCD
-translate_cmd_pwm
     ; Check if is pwm command
             movlw   CMDPWM
             call    validate_cmd
-            btfss   STATUS,Z
-            goto    translate_cmd_dir
+            sublw   CMDKWN
+            btfsc   STATUS,Z
             bsf     ICESTATUS0,ICECMDPWM
-translate_cmd_dir
     ; Check if is dir command
             movlw   CMDDIR
             call    validate_cmd
-            btfss   STATUS,Z
-            goto    translate_cmd_lig
+            sublw   CMDKWN
+            btfsc   STATUS,Z
             bsf     ICESTATUS0,ICECMDDIR
-translate_cmd_lig
     ; Check if is lig command
             movlw   CMDLIG
             call    validate_cmd
-            btfss   STATUS,Z
-            goto    translate_cmd_end
+            sublw   CMDKWN
+            btfsc   STATUS,Z
             bsf     ICESTATUS0,ICECMDLIG
+            goto    translate_cmd_end
 translate_cmd_echo
     ; Check if is echo command
             movlw   CMDECH
             call    validate_cmd
-            btfss   STATUS,Z
-            goto    translate_cmd_end
+            sublw   CMDKWN
+            btfsc   STATUS,Z
             bsf     ICESTATUS0,ICECMDECH
 translate_cmd_end
             movf    RS232RX3,W
@@ -225,28 +221,21 @@ validate_cmd1
             subwf   RS232RX0,W
             btfsc   STATUS,Z
             goto    validate_cmd2
-            movlw   CMDUNKWN
-            goto    validate_cmd_end
+            retlw   CMDUNKWN
 validate_cmd2
             incf    EEPROMADR,F
             call    read_eeprom
             subwf   RS232RX1,W
             btfsc   STATUS,Z
             goto    validate_cmd3
-            movlw   CMDUNKWN
-            goto    validate_cmd_end
+            retlw   CMDUNKWN
 validate_cmd3
             incf    EEPROMADR,F
             call    read_eeprom
             subwf   RS232RX2,W
             btfsc   STATUS,Z
-            goto    validate_cmd_kwn
-            movlw   CMDUNKWN
-            goto    validate_cmd_end
-validate_cmd_kwn
-            movlw   CMDKWN
-validate_cmd_end
-            return
+            retlw   CMDKWN
+            retlw   CMDUNKWN
 ; ------------------------------------------------------------------------------
 ; Reply to echo command
 ; ------------------------------------------------------------------------------
