@@ -61,13 +61,16 @@ pwm_start
             movwf   PWMSTATUS
      ; Set PWM based on PWMCYCLE
             movf    PWMCYCLE,W
-            btfsc   STATUS,Z
-            return
+            btfss   STATUS,Z
             call    pwm_set_duty_cycle
      ; Enable Timer2
             clrf    TMR2
             bsf     T2CON,TMR2ON
-            return
+            movlw   PWMCMDOK
+            subwf   PWMSTATUS,W
+            btfss   STATUS,Z
+            retlw   PWMCMDERR
+            retlw   PWMCMDOK
 ; ------------------------------------------------------------------------------
 ; Stop pwm
 ; ------------------------------------------------------------------------------
