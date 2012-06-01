@@ -83,8 +83,11 @@ rs232_tx_int
             ; First check if still missing bytes to transfer
             movf    RS232TXIND,W
             btfss   STATUS,Z
-            call    rs232_tx
-            bcf     PIR1,TXIF
+            goto    rs232_tx
+            ; Transmission has ended
+            bsf     STATUS,RP0
+            bcf     PIE1,TXIE
+            bcf     STATUS,RP0
             return
 ; ------------------------------------------------------------------------------
 ; Tx rs232
@@ -120,36 +123,40 @@ rs232_tx_new
             movlw   RS232CMDSIZE
             movwf   RS232TXIND
             incf    RS232TXIND,F
+            bsf     STATUS,RP0
+            bsf     PIE1,TXIE
+            bcf     STATUS,RP0
             movlw   '@'
 rs232_tx_end
-            movwf   TXREG
             bsf     STATUS,RP0
             bsf     TXSTA,TXEN
             bcf     STATUS,RP0
+            movwf   TXREG
             decf    RS232TXIND,F
             return
 ; ------------------------------------------------------------------------------
 ; Rx rs232 interruption
 ; ------------------------------------------------------------------------------
 rs232_rx_int
-            call    rs232_rx
-            bcf     PIR1,RCIF
-            return
+            ; TODO: Check for errors
+            goto    rs232_rx
 ; ------------------------------------------------------------------------------
 ; Rx rs232
 ; ------------------------------------------------------------------------------
 rs232_rx
             bcf     STATUS,RP0
             bcf     STATUS,RP1
-            ; Echo all characters received
+            ; Read RX register
             movf    RCREG,W
-            movwf   TXREG
+            movwf   RS232RXREG
+            ; Echo all characters received
             bsf     STATUS,RP0
             bsf     TXSTA,TXEN
             bcf     STATUS,RP0
+            movwf   TXREG
             ; Check if it is a start of transmission
             movlw   '@'
-            subwf   RCREG,W
+            subwf   RS232RXREG,W
             btfss   STATUS,Z
             goto    rs232_rx_notstart
 rs232_rx_start
@@ -179,7 +186,7 @@ rs232_rx_command
             movwf   RS232STATUS
             ; Check if it is a command transmission
             movlw   'C'
-            subwf   RCREG,W
+            subwf   RS232RXREG,W
             btfsc   STATUS,Z
             ; Command started
             return
@@ -188,7 +195,7 @@ rs232_rx_message
             movwf   RS232STATUS
             ; Check if it is a message transmission
             movlw   'M'
-            subwf   RCREG,W
+            subwf   RS232RXREG,W
             btfsc   STATUS,Z
             ; Message started
             return
@@ -208,7 +215,7 @@ rs232_rx_buffer0
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer1
-            movf    RCREG,W
+            movf    RS232RXREG,W
             movwf   RS232RX0
             return
 rs232_rx_buffer1
@@ -216,7 +223,7 @@ rs232_rx_buffer1
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer2
-            movf    RCREG,W
+            movf    RS232RXREG,W
             movwf   RS232RX1
             return
 rs232_rx_buffer2
@@ -224,7 +231,7 @@ rs232_rx_buffer2
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer3
-            movf    RCREG,W
+            movf    RS232RXREG,W
             movwf   RS232RX2
             return
 rs232_rx_buffer3
@@ -232,7 +239,7 @@ rs232_rx_buffer3
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer4
-            movf    RCREG,W
+            movf    RS232RXREG,W
             movwf   RS232RX3
             return
 rs232_rx_buffer4
@@ -240,7 +247,7 @@ rs232_rx_buffer4
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer5
-            movf    RCREG,W
+            movf    RS232RXREG,W
             movwf   RS232RX4
             return
 rs232_rx_buffer5
@@ -248,7 +255,7 @@ rs232_rx_buffer5
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer6
-            movf    RCREG,W
+            movf    RS232RXREG,W
             movwf   RS232RX5
             return
 rs232_rx_buffer6
@@ -256,7 +263,7 @@ rs232_rx_buffer6
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer7
-            movf    RCREG,W
+            movf    RS232RXREG,W
             movwf   RS232RX6
             return
 rs232_rx_buffer7
@@ -264,7 +271,7 @@ rs232_rx_buffer7
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             goto    rs232_rx_buffer_throw
-            movf    RCREG,W
+            movf    RS232RXREG,W
             movwf   RS232RX7
             return
 rs232_rx_buffer_throw

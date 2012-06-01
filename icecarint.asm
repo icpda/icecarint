@@ -81,12 +81,12 @@ main
     ; Clear status registers
             clrf    ICESTATUS0
             clrf    ICESTATUS1
-loop
+main_loop
     ; Check command available
 loop_cmd
             btfss   ICESTATUS0,ICECMD
             goto    loop_msg
-            bsf     PORTD,RD3
+            bcf     PORTD,RD3
             call    translate_cmd
             bcf     ICESTATUS0,ICECMD
     ; Check if was PWM command
@@ -109,7 +109,7 @@ loop_msg
             bcf     ICESTATUS0,ICEMSG
     ; Restart loop
 loop_end
-            goto    loop
+            goto    main_loop
 ; ------------------------------------------------------------------------------
 ; Clear ports
 ; ------------------------------------------------------------------------------
@@ -146,6 +146,7 @@ check_for_cmd
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             return
+            bsf     PORTD,RD3
             bsf     ICESTATUS0,ICECMD
             call    translate_cmd_echo
             btfss   ICESTATUS0,ICECMDECH
@@ -154,6 +155,9 @@ check_for_cmd
             movwf   ICECMDECHARG
     ; There was an echo command
             call    reply2_echo_cmd
+            sublw   CMDECH
+            btfss   STATUS,Z
+            call    err_echo_cmd
             bcf     ICESTATUS0,ICECMDECH
             bcf     ICESTATUS0,ICECMD
             return
@@ -247,10 +251,10 @@ validate_cmd_end
 ; Reply to echo command
 ; ------------------------------------------------------------------------------
 reply2_echo_cmd
-            movlw   "O"
+            movlw   'O'
             subwf   ICECMDECHARG,W
             btfss   STATUS,Z
-            call    err_echo_cmd
+            retlw   CMDERR
     ; Command echo correct
             movlw   CMDECH
             movwf   EEPROMADR
@@ -265,7 +269,7 @@ reply2_echo_cmd
             movf    ICESTATUS0,W
             movwf   RS232TX3
             call    rs232_tx
-            return
+            retlw   CMDECH
 ; ------------------------------------------------------------------------------
 ; Display echo command error
 ; ------------------------------------------------------------------------------
@@ -275,6 +279,8 @@ err_echo_cmd
             return
 ; ------------------------------------------------------------------------------
 ; Display pwm command error
+; ------------------------------------------------------------------------------
+err_pwm_cmd
             movlw   CMDPWM
             call    display_cmd_err
             return
