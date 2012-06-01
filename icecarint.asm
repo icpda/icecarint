@@ -145,6 +145,7 @@ check_for_cmd
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             return
+    ; TODO: Remove debug
             bcf     PORTD,RD3
             bsf     ICESTATUS0,ICECMD
             call    translate_cmd_echo
@@ -382,21 +383,21 @@ read_eeprom_end
 ; ------------------------------------------------------------------------------
 display_msg
             movf    RS232RX0,W
-            movwf   LCDDAT0
+            movwf   LCDDAT8
             movf    RS232RX1,W
-            movwf   LCDDAT1
+            movwf   LCDDAT9
             movf    RS232RX2,W
-            movwf   LCDDAT2
+            movwf   LCDDATA
             movf    RS232RX3,W
-            movwf   LCDDAT3
+            movwf   LCDDATB
             movf    RS232RX4,W
-            movwf   LCDDAT4
+            movwf   LCDDATC
             movf    RS232RX5,W
-            movwf   LCDDAT5
+            movwf   LCDDATD
             movf    RS232RX6,W
-            movwf   LCDDAT6
+            movwf   LCDDATE
             movf    RS232RX7,W
-            movwf   LCDDAT7
+            movwf   LCDDATF
     ; Write message to lcd
             call    lcd_write_msg2
             return
