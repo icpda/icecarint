@@ -20,5 +20,25 @@ LCD	TMR0	ANSEL		 0030-003F
 		OPTION_REG
 EEPROM  NA      EECON1           0120-0125
 
+------------
+Test Cases
+------------
+
+Command     Return
+-------------------------------------------
+XXXXXX      Nothing
+@XXXXX      Nothing
+@CXXXX      Nothing
+@CECHO      @ECH?  ?: Status register value
+@CECHX      LCD "ERR:ECH "
+@CPWM0      PWM0: Speed 0
+@CPWM1      PWM1: Speed 1
+@CPWM2      PWM2: Speed 2
+@CPWM3      PWM3: Speed 3
+@CPWM4      PWM4: Speed 4
+@CPWM5      PWM5: Speed 5
+@CPWM6      PWM6: Speed 6
+@CPWMX      LCD "ERR:PWM "
+@MAWESOME!  LCD "AWESOME!"
 
 ICe
