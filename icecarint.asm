@@ -21,6 +21,7 @@
             #include icecarint.inc
             #include rs232.inc
             #include pwm.inc
+            #include direction.inc
             #include lcd.inc
             #include eeprom.inc
 
@@ -69,6 +70,7 @@ main
             call    rs232_conf
             call    lcd_conf
             call    pwm_conf
+            call    dir_conf
             call    eeprom_conf
     ; Prepare modules
             call    lcd_prepare
@@ -88,9 +90,10 @@ loop_cmd
             goto    loop_msg
             call    translate_cmd
             bcf     ICESTATUS0,ICECMD
+loop_cmd_pwm
     ; Check if was PWM command
             btfss   ICESTATUS0,ICECMDPWM
-            goto    loop_msg
+            goto    loop_cmd_dir
             call    pwm_stop
             movf    ICESTATUS1,W
             xorlw   H'30'
@@ -100,6 +103,17 @@ loop_cmd
             btfss   STATUS,Z
             call    err_pwm_cmd
             bcf     ICESTATUS0,ICECMDPWM
+loop_cmd_dir
+    ; Check if was Direction command
+            btfss   ICESTATUS0,ICECMDDIR
+            goto    loop_msg
+            movf    ICESTATUS1,W
+            movwf   DIRVALUE
+            call    dir_set
+            sublw   DIRCMDOK
+            btfss   STATUS,Z
+            call    err_dir_cmd
+            bcf     ICESTATUS0,ICECMDDIR
     ; Check message available
 loop_msg
             btfss   ICESTATUS0,ICEMSG
@@ -118,9 +132,6 @@ clear_ports
             clrf    PORTC
             clrf    PORTD
             clrf    PORTE
-            bsf     STATUS,RP0
-            bcf     TRISD,RD3
-            bcf     STATUS,RP0
             return
 ; ------------------------------------------------------------------------------
 ; Interrupts enable
@@ -272,6 +283,13 @@ err_echo_cmd
 ; ------------------------------------------------------------------------------
 err_pwm_cmd
             movlw   CMDPWM
+            call    display_cmd_err
+            return
+; ------------------------------------------------------------------------------
+; Display dir command error
+; ------------------------------------------------------------------------------
+err_dir_cmd
+            movlw   CMDDIR
             call    display_cmd_err
             return
 ; ------------------------------------------------------------------------------

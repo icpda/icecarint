@@ -66,6 +66,9 @@ extern  pwm_conf
 extern  pwm_start
 extern  pwm_stop
 extern  pwm_set_duty_cycle
+; DIRECTION Module
+extern dir_conf
+extern dir_set
 ; LCD Module
 extern  lcd_conf
 extern  lcd_prepare

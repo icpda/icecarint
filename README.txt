@@ -16,6 +16,7 @@ RS232	NA	RCSTA TXSTA	 0020-002F
 		SPBGR
 PWM	TMR2	CCP2CON	CPR2L	 0040-0041
 		PR2 TMR2
+DIR     NA      NA               0042-0042
 LCD	TMR0	ANSEL		 0030-003F
 		OPTION_REG
 EEPROM  NA      EECON1           0120-0125
@@ -39,6 +40,12 @@ XXXXXX      Nothing
 @CPWM5      PWM5: Speed 5
 @CPWM6      PWM6: Speed 6
 @CPWMX      LCD "ERR:PWM "
+@CDIRF      Direction Forward
+@CDIRB      Direction Back
+@CDIRL      Direction Left
+@CDIRR      Direction Right
+@CDIRS      Direction Stop
+@CDIRX      LCD "ERR:DIR "
 @MAWESOME!  LCD "AWESOME!"
 
 ICe
