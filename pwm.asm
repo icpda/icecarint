@@ -50,6 +50,7 @@ pwm_conf
      ; Enable PWM pin
             bsf     STATUS,RP0
             bcf     TRISD,RD2
+            bsf     STATUS,RP0
             return
 ; ------------------------------------------------------------------------------
 ; Start pwm
@@ -87,6 +88,8 @@ pwm_stop
     ; Clear PWM pin
             bcf     PORTD,RD2
             return
+; ------------------------------------------------------------------------------
+; Set pwm duty cycle
 ; ------------------------------------------------------------------------------
 pwm_set_duty_cycle
             decfsz  PWMCYCLE,F
