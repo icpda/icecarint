@@ -169,8 +169,6 @@ check_for_cmd
             subwf   RS232RXIND,W
             btfss   STATUS,Z
             return
-    ; TODO: Remove debug
-            bcf     PORTD,RD3
             bsf     ICESTATUS0,ICECMD
             call    translate_cmd_echo
             btfss   ICESTATUS0,ICECMDECH
