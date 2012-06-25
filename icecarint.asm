@@ -22,6 +22,7 @@
             #include rs232.inc
             #include pwm.inc
             #include direction.inc
+            #include led.inc
             #include lcd.inc
             #include eeprom.inc
 
@@ -71,6 +72,7 @@ main
             call    lcd_conf
             call    pwm_conf
             call    dir_conf
+            call    led_conf
             call    eeprom_conf
     ; Prepare modules
             call    lcd_prepare
@@ -106,7 +108,7 @@ loop_cmd_pwm
 loop_cmd_dir
     ; Check if was Direction command
             btfss   ICESTATUS0,ICECMDDIR
-            goto    loop_msg
+            goto    loop_cmd_led
             movf    ICESTATUS1,W
             movwf   DIRVALUE
             call    dir_set
@@ -114,6 +116,17 @@ loop_cmd_dir
             btfss   STATUS,Z
             call    err_dir_cmd
             bcf     ICESTATUS0,ICECMDDIR
+loop_cmd_led
+    ; Check if was LED command
+            btfss   ICESTATUS0,ICECMDLED
+            goto    loop_msg
+            movf    ICESTATUS1,W
+            movwf   LEDVALUE
+            call    led_set
+            sublw   LEDCMDOK
+            btfss   STATUS,Z
+            call    err_led_cmd
+            bcf     ICESTATUS0,ICECMDLED
     ; Check message available
 loop_msg
             btfss   ICESTATUS0,ICEMSG
@@ -205,12 +218,12 @@ translate_cmd
             sublw   CMDKWN
             btfsc   STATUS,Z
             bsf     ICESTATUS0,ICECMDDIR
-    ; Check if is lig command
-            movlw   CMDLIG
+    ; Check if is led command
+            movlw   CMDLED
             call    validate_cmd
             sublw   CMDKWN
             btfsc   STATUS,Z
-            bsf     ICESTATUS0,ICECMDLIG
+            bsf     ICESTATUS0,ICECMDLED
             goto    translate_cmd_end
 translate_cmd_echo
     ; Check if is echo command
@@ -290,6 +303,13 @@ err_pwm_cmd
 ; ------------------------------------------------------------------------------
 err_dir_cmd
             movlw   CMDDIR
+            call    display_cmd_err
+            return
+; ------------------------------------------------------------------------------
+; Display led command error
+; ------------------------------------------------------------------------------
+err_led_cmd
+            movlw   CMDLED
             call    display_cmd_err
             return
 ; ------------------------------------------------------------------------------
@@ -452,8 +472,8 @@ err_dir     de      "ERR:DIR "
 ; ------------------------------------------------------------------------------
 ; Lights command
 ; ------------------------------------------------------------------------------
-cmd_lig     de      "LIG", CMDLIG
+cmd_lig     de      "LED", CMDLED
             de      "RESV"
-err_lig     de      "ERR:LIG "
+err_lig     de      "ERR:LED "
 ; ------------------------------------------------------------------------------
             end

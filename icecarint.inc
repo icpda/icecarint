@@ -49,7 +49,7 @@ ICECMDECH       EQU H'05'
 ICECMDLCD       EQU H'04'
 ICECMDPWM       EQU H'03'
 ICECMDDIR       EQU H'02'
-ICECMDLIG       EQU H'01'
+ICECMDLED       EQU H'01'
 
 ; ------------------------------------------------------------------------------
 ; External functions declaration
@@ -69,6 +69,9 @@ extern  pwm_set_duty_cycle
 ; DIRECTION Module
 extern dir_conf
 extern dir_set
+; DIRECTION Module
+extern led_conf
+extern led_set
 ; LCD Module
 extern  lcd_conf
 extern  lcd_prepare
@@ -88,5 +91,5 @@ CMDECH          EQU H'10'
 CMDLCD          EQU H'20'
 CMDPWM          EQU H'30'
 CMDDIR          EQU H'40'
-CMDLIG          EQU H'50'
+CMDLED          EQU H'50'
 CMDERR          EQU H'FF'
